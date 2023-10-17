@@ -1,0 +1,10 @@
+{
+	"authors": [
+		"Andrew Lalis"
+	],
+	"copyright": "Copyright © 2023, Andrew Lalis",
+	"description": "Simple library for matching URLs to patterns, using a limited syntax.",
+	"license": "MIT",
+	"name": "path-matcher",
+	"targetType": "library"
+}

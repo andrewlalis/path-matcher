@@ -1,0 +1,17 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/path-matcher
+path-matcher.so
+path-matcher.dylib
+path-matcher.dll
+path-matcher.a
+path-matcher.lib
+path-matcher-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst
+*.a
