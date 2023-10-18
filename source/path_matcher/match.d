@@ -119,7 +119,6 @@ class PathPatternParseException : Exception {
  */
 PathMatchResult matchPath(string url, string pattern) {
     import std.array;
-    import std.stdio;
 
     // First initialize buffers for the URL and pattern segments on the stack.
     string[MAX_PATH_SEGMENTS] urlSegmentsBuffer;
@@ -141,7 +140,6 @@ PathMatchResult matchPath(string url, string pattern) {
     string patternSegment = popSegment(patternSegments, patternSegmentIdx);
     bool doingMultiMatch = false;
     while (urlSegment !is null && patternSegment !is null) {
-        writefln!"URL segment: %s, Pattern segment: %s"(urlSegment, patternSegment);
         if (patternSegment == "*") {
             // This matches any single URL segment. Skip to the next one.
             urlSegment = popSegment(urlSegments, urlSegmentIdx);
