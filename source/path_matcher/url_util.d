@@ -6,7 +6,8 @@ module path_matcher.url_util;
 import std.range.primitives : isRandomAccessRange, hasLength, ElementType;
 
 /**
- * Extracts segments from a slash-separated URL path.
+ * Extracts segments from a slash-separated URL path and stores them in a given
+ * `store` array which has been pre-allocated.
  * Params:
  *   path = The path to parse.
  *   store = The array to store segments in. Consider allocating this on the
@@ -58,6 +59,7 @@ unittest {
     doTest("/a/b?c=d", ["a", "b"]);
     doTest("", []);
     doTest("/", []);
+    doTest("///", []);
 }
 
 /**

@@ -9,6 +9,20 @@ import path_matcher.url_util;
 immutable size_t MAX_PATH_SEGMENTS = 64;
 
 /**
+ * The list of possible integral types that a path parameter can be annotated as.
+ * Note that there may be other complex types supported in addition to these;
+ * integral types are just listed here so we can generate validation with CTFE.
+ */
+immutable string[] PATH_PARAMETER_INTEGRAL_TYPES = [
+    "byte", "ubyte",
+    "short", "ushort",
+    "int", "uint",
+    "long", "ulong",
+    "float", "double",
+    "bool"
+];
+
+/**
  * Represents a path parameter that was parsed from a URL when matching it
  * against a pattern.
  */
@@ -106,6 +120,7 @@ class PathPatternParseException : Exception {
 PathMatchResult matchPath(string url, string pattern) {
     import std.array;
 
+    // First initialize buffers for the URL and pattern segments on the stack.
     string[MAX_PATH_SEGMENTS] urlSegmentsBuffer;
     int urlSegmentsCount = toSegments(url, urlSegmentsBuffer);
     if (urlSegmentsCount == -1) throw new PathPatternParseException("Too many URL segments.");
@@ -120,6 +135,7 @@ PathMatchResult matchPath(string url, string pattern) {
 
     Appender!(PathParam[]) pathParamAppender = appender!(PathParam[])();
 
+    // Now pop segments from each stack until we've consumed the whole URL and pattern.
     string urlSegment = popSegment(urlSegments, urlSegmentIdx);
     string patternSegment = popSegment(patternSegments, patternSegmentIdx);
     bool doingMultiMatch = false;
@@ -225,7 +241,7 @@ unittest {
  * Returns: True if the URL segment contains a valid value for the path
  * parameter, or false otherwise.
  */
-private bool pathParamMatches(string patternSegment, string urlSegment) {
+private bool pathParamMatches(in string patternSegment, in string urlSegment) {
     if (
         patternSegment is null || patternSegment.length < 2 || patternSegment[0] != ':' ||
         urlSegment is null || urlSegment.length < 1
@@ -240,23 +256,30 @@ private bool pathParamMatches(string patternSegment, string urlSegment) {
         }
     }
     if (typeSeparatorIdx != -1) {
-        if (patternSegment.length < typeSeparatorIdx + 2) return false; // The type name is too short.
-        string typeName = patternSegment[typeSeparatorIdx + 1 .. $];
         import std.conv : to, ConvException;
+        import std.uuid : parseUUID, UUIDParsingException;
+        import std.uni : toLower;
+        if (patternSegment.length < typeSeparatorIdx + 2) return false; // The type name is too short.
+        string typeName = toLower(patternSegment[typeSeparatorIdx + 1 .. $]);
         try {
-            if (typeName == "int") {
-                to!int(urlSegment);
-            } else if (typeName == "bool") {
-                to!bool(urlSegment);
-            } else if (typeName == "float") {
-                to!float(urlSegment);
-            } else {
-                return false; // Unknown type pattern.
+            static foreach (string integralType; PATH_PARAMETER_INTEGRAL_TYPES) {
+                if (typeName == integralType) {
+                    mixin("to!" ~ integralType ~ "(urlSegment);");
+                    return true;
+                }
             }
+            // Any other supported types.
+            if (typeName == "uuid") {
+                parseUUID(urlSegment);
+                return true;
+            }
+            // None of the allowed types were matched.
+            return false;
         } catch (ConvException e) {
             return false;
+        } catch (UUIDParsingException e) {
+            return false;
         }
-        return true;
     } else {
         return true;
     }
