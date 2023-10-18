@@ -119,6 +119,7 @@ class PathPatternParseException : Exception {
  */
 PathMatchResult matchPath(string url, string pattern) {
     import std.array;
+    import std.stdio;
 
     // First initialize buffers for the URL and pattern segments on the stack.
     string[MAX_PATH_SEGMENTS] urlSegmentsBuffer;
@@ -140,6 +141,7 @@ PathMatchResult matchPath(string url, string pattern) {
     string patternSegment = popSegment(patternSegments, patternSegmentIdx);
     bool doingMultiMatch = false;
     while (urlSegment !is null && patternSegment !is null) {
+        writefln!"URL segment: %s, Pattern segment: %s"(urlSegment, patternSegment);
         if (patternSegment == "*") {
             // This matches any single URL segment. Skip to the next one.
             urlSegment = popSegment(urlSegments, urlSegmentIdx);
@@ -173,8 +175,8 @@ PathMatchResult matchPath(string url, string pattern) {
             return PathMatchResult(false, PathParam[].init);
         }
     }
-    // If not all pattern segments were consumed, no match!
-    if (patternSegment !is null) return PathMatchResult(false, PathParam[].init);
+    // If not all segments were consumed, no match!
+    if (patternSegment !is null || urlSegment !is null) return PathMatchResult(false, PathParam[].init);
 
     return PathMatchResult(true, pathParamAppender[]);
 }
@@ -228,6 +230,8 @@ unittest {
     assertMatch("/users/**/settings", "/users/andrew/data/a/settings", true);
     assertMatch("/users/**/settings", "/users/settings", true);
     assertMatch("/users/**/:username", "/users/andrew", true, ["username": "andrew"]);
+    assertMatch("/users/:id:ulong", "/users/123", true, ["id": "123"]);
+    assertMatch("/users", "/users/123", false);
 }
 
 /**
