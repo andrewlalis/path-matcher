@@ -79,3 +79,10 @@ string popSegment(I)(I segments, ref uint idx) if (
     if (idx >= segments.length) return null;
     return segments[idx++];
 }
+
+unittest {
+    string[] a = ["a", "b", "c"];
+    uint idx = 0;
+    assert(popSegment(a, idx) == "a");
+    assert(idx == 1);
+}

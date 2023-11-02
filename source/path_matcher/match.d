@@ -138,6 +138,11 @@ PathMatchResult matchPath(string url, string pattern) {
     // Now pop segments from each stack until we've consumed the whole URL and pattern.
     string urlSegment = popSegment(urlSegments, urlSegmentIdx);
     string patternSegment = popSegment(patternSegments, patternSegmentIdx);
+
+    // Do some initial checks for special conditions:
+    // If the first segment in the pattern is a multi-match wildcard, anything is a match.
+    if (patternSegment !is null && patternSegment == "**") return PathMatchResult(true, []);
+
     bool doingMultiMatch = false;
     while (urlSegment !is null && patternSegment !is null) {
         if (patternSegment == "*") {
@@ -213,6 +218,9 @@ unittest {
         writeln("\tCheck!");
     }
 
+    assertMatch("/**", "", true);
+    assertMatch("/**", "/", true);
+    assertMatch("/**", "/a/b/c/d", true);
     assertMatch("/users", "/users", true);
     assertMatch("/users/*", "/users/andrew", true);
     assertMatch("/users/:username", "/users/andrew", true, ["username": "andrew"]);
