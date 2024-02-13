@@ -178,8 +178,10 @@ PathMatchResult matchPath(string url, string pattern) {
             return PathMatchResult(false, PathParam[].init);
         }
     }
-    // If not all segments were consumed, no match!
-    if (patternSegment !is null || urlSegment !is null) return PathMatchResult(false, PathParam[].init);
+    // If not all segments were consumed, there's some extra logic to check.
+    if ((patternSegment !is null && patternSegment != "**") || urlSegment !is null) {
+        return PathMatchResult(false, PathParam[].init);
+    }
 
     return PathMatchResult(true, pathParamAppender[]);
 }
@@ -223,6 +225,10 @@ unittest {
     assertMatch("/**", "/a/b/c/d", true);
     assertMatch("/users", "/users", true);
     assertMatch("/users/*", "/users/andrew", true);
+    assertMatch("/users/**", "/users", true);
+    assertMatch("/users/data/**", "/users/andrew", false);
+    assertMatch("/users/data/**", "/users/data", true);
+    assertMatch("/users/data/**", "/users/data/andrew", true);
     assertMatch("/users/:username", "/users/andrew", true, ["username": "andrew"]);
     assertMatch("/users", "/user", false);
     assertMatch("/users", "/data", false);
