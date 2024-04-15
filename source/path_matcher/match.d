@@ -56,6 +56,28 @@ immutable struct PathMatchResult {
     PathParam[] pathParams;
 
     /**
+     * Converts the result to a boolean value. This is synonymous to `matches`.
+     * Returns: True, if the pattern matches the pattern.
+     */
+    T opCast(T : bool)() const {
+        return matches;
+    }
+
+    ///
+    unittest {
+        if (auto match = matchPath("/path", "/:name")) {
+            assert(match.getPathParam("name") == "path");
+        }
+        else {
+            assert(false);
+        }
+
+        if (auto match = matchPath("/path", "/no-match")) {
+            assert(false);
+        }
+    }
+
+    /**
      * Gets the path parameters as a string-to-string mapping.
      * Returns: An associative array containing the path parameters.
      */
