@@ -5,6 +5,8 @@ module path_matcher.url_util;
 
 import std.range.primitives : isRandomAccessRange, hasLength, ElementType;
 
+@safe:
+
 /**
  * Extracts segments from a slash-separated URL path and stores them in a given
  * `store` array which has been pre-allocated.

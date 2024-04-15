@@ -5,6 +5,8 @@ module path_matcher.match;
 
 import path_matcher.url_util;
 
+@safe:
+
 /// The maximum number of path segments that this library supports.
 immutable size_t MAX_PATH_SEGMENTS = 64;
 
@@ -81,7 +83,7 @@ immutable struct PathMatchResult {
      * Gets the path parameters as a string-to-string mapping.
      * Returns: An associative array containing the path parameters.
      */
-    immutable(string[string]) pathParamsAsMap() const {
+    immutable(string[string]) pathParamsAsMap() const @trusted {
         string[string] map;
         foreach (param; this.pathParams) {
             map[param.name] = param.value;
@@ -146,13 +148,13 @@ PathMatchResult matchPath(string url, string pattern) {
     string[MAX_PATH_SEGMENTS] urlSegmentsBuffer;
     int urlSegmentsCount = toSegments(url, urlSegmentsBuffer);
     if (urlSegmentsCount == -1) throw new PathPatternParseException("Too many URL segments.");
-    immutable(string[]) urlSegments = cast(immutable(string[])) urlSegmentsBuffer[0 .. urlSegmentsCount];
+    scope string[] urlSegments = urlSegmentsBuffer[0 .. urlSegmentsCount];
     uint urlSegmentIdx = 0;
 
     string[MAX_PATH_SEGMENTS] patternSegmentsBuffer;
     int patternSegmentsCount = toSegments(pattern, patternSegmentsBuffer);
     if (patternSegmentsCount == -1) throw new PathPatternParseException("Too many pattern segments.");
-    immutable(string[]) patternSegments = cast(immutable(string[])) patternSegmentsBuffer[0 .. patternSegmentsCount];
+    scope string[] patternSegments = patternSegmentsBuffer[0 .. patternSegmentsCount];
     uint patternSegmentIdx = 0;
 
     Appender!(PathParam[]) pathParamAppender = appender!(PathParam[])();
@@ -209,7 +211,7 @@ PathMatchResult matchPath(string url, string pattern) {
 }
 
 unittest {
-    void assertMatch(string pattern, string url, bool matches, string[string] pathParams = string[string].init) {
+    void assertMatch(string pattern, string url, bool matches, immutable string[string] pathParams = string[string].init) {
         import std.format : format;
         import std.stdio;
         PathMatchResult result = matchPath(url, pattern);
@@ -227,7 +229,7 @@ unittest {
         );
         if (result.matches) {
             assert(
-                result.pathParamsAsMap == cast(immutable(string[string])) pathParams,
+                result.pathParamsAsMap == pathParams,
                 format!(
                     "PathMatchResult.pathParams is not correct for\nURL:\t\t%s\nPattern:\t%s\n" ~
                     "Expected %s instead of %s."
