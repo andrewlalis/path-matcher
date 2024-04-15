@@ -17,7 +17,7 @@ import std.range.primitives : isRandomAccessRange, hasLength, ElementType;
  * Returns: The number of segments that were parsed, or -1 if the given store
  * is too small to fit all of them.
  */
-int toSegments(string path, string[] store) @nogc {
+int toSegments(string path, scope string[] store) @nogc {
     uint i = 0;
     uint storeIdx = 0;
     while (i < path.length) {

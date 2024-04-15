@@ -211,7 +211,12 @@ PathMatchResult matchPath(string url, string pattern) {
 }
 
 unittest {
-    void assertMatch(string pattern, string url, bool matches, immutable string[string] pathParams = string[string].init) {
+    void assertMatch(
+        string pattern,
+        string url,
+        bool matches,
+        immutable string[string] pathParams = string[string].init
+    ) {
         import std.format : format;
         import std.stdio;
         PathMatchResult result = matchPath(url, pattern);
